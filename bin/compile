@@ -1,2 +1,27 @@
-pip install pypandoc
-python -c 'import pypandoc; pypandoc.download_pandoc()'
+#!/bin/sh
+
+indent() {
+  sed -u 's/^/       /'
+}
+
+echo "-----> Installing pandoc"
+BUILD_DIR=$1
+VENDOR_DIR="vendor"
+
+mkdir /tmp/pandoc
+cd /tmp/pandoc
+wget https://github.com/jgm/pandoc/releases/download/1.18/pandoc-1.18-1-amd64.deb
+ar x pandoc-1.18-1-amd64.deb
+tar xvf data.tar.gz
+
+cd $BUILD_DIR
+mkdir -p $VENDOR_DIR/pandoc/bin
+cd $VENDOR_DIR
+mv /tmp/pandoc/usr/bin/pandoc pandoc/bin/pandoc
+chmod +x pandoc/bin/pandoc
+rm -r /tmp/pandoc
+
+echo "exporting PATH" | indent
+PROFILE_PATH="$BUILD_DIR/.profile.d/pandoc.sh"
+mkdir -p $(dirname $PROFILE_PATH)
+echo 'export PATH="$PATH:vendor/pandoc/bin"' >> $PROFILE_PATH
